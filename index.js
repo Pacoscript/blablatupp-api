@@ -24,7 +24,6 @@ mongoose
     app.use(cors)
 
     app.use('/api', router)
-
     app.listen(PORT, () => {
       console.log(
         `${package.name} ${package.version} up and running on port ${PORT}`

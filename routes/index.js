@@ -31,7 +31,6 @@ router.post('/auth', jsonBodyParser, (req, res) => {
 
     return logic.authenticateUser(username, password).then(id => {
       const token = jwt.sign({ sub: id }, JWT_SECRET)
-
       res.json({
         data: {
           id,
@@ -39,6 +38,28 @@ router.post('/auth', jsonBodyParser, (req, res) => {
         },
       })
     })
+  }, res)
+})
+
+//CREATE WORKCENTER
+router.post('/work-center', jsonBodyParser, (req, res) => {
+  routeHandler(() => {
+    const { name, address, city } = req.body
+    return logic.createWorkcenter(name, address, city).then(() => {
+        res.status(201)
+        res.json({message: `Work Center ${name} succesfully created`})
+      })
+  }, res)
+})
+
+//CREATE RATION
+router.post('/ration', jsonBodyParser, (req, res) => {
+  routeHandler(() => {
+    const { name, prize, createdBy, workCenterId } = req.body
+    return logic.createRation(name, prize, createdBy, workCenterId).then(() => {
+        res.status(201)
+        res.json({message: `Ration ${name} succesfully created`})
+      })
   }, res)
 })
 

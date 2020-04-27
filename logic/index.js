@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 const User = require('../database/models/User')
+const Workcenter = require('../database/models/Workcenter')
+const Ration = require('../database/models/Ration')
 const {
   AlreadyExistsError,
   AuthError,
@@ -40,6 +42,36 @@ const logic = {
       return user.id
     })()
   },
+
+  createWorkcenter (name, address, city) {
+    validate([
+      { key: 'name', value: name, type: String },
+      { key: 'address', value: address, type: String },
+      { key: 'city', value: city, type: String },
+    ])
+
+    return (async () => {
+      let center = await Workcenter.findOne({ name })
+      if (center)
+        throw new AlreadyExistsError(`workcenter ${name} already registered`)
+      workCenter = new Workcenter({ name, address, city })
+      await workCenter.save()
+    })()
+  },
+
+  createRation (name, prize, createdBy, workCenterId) {
+    validate([
+      { key: 'name', value: name, type: String },
+      { key: 'prize', value: prize, type: Number },
+      { key: 'createdBy', value: createdBy, type: String },
+      { key: 'workCenterId', value: workCenterId, type: String },
+    ])
+
+    return (async () => {
+      ration = new Ration({ name, prize, createdBy, workCenterId })
+      await ration.save()
+    })()
+  }
 }
 
 module.exports = logic
