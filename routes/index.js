@@ -4,6 +4,8 @@ const jsonBodyParser = bodyParser.json({ limit: '50mb' })
 const logic = require('../logic')
 const routeHandler = require('./route-handler')
 const jwt = require('jsonwebtoken')
+const bearerTokenParser = require('../utils/bearer-token-parser')
+const jwtVerifier = require('./jwt-verifier')
 
 const router = express.Router()
 
@@ -42,24 +44,33 @@ router.post('/auth', jsonBodyParser, (req, res) => {
 })
 
 //CREATE WORKCENTER
-router.post('/work-center', jsonBodyParser, (req, res) => {
+router.post('/work-center/:id', [bearerTokenParser, jwtVerifier, jsonBodyParser], (req, res) => {
   routeHandler(() => {
-    const { name, address, city } = req.body
-    return logic.createWorkcenter(name, address, city).then(() => {
+    const { params: { id }, sub } = req
+    if (id !== sub) { throw Error('token sub does not match user id') }
+    else {
+      const { name, address, city } = req.body
+      console.log(name, address, city)
+      return logic.createWorkcenter(name, address, city).then(() => {
         res.status(201)
-        res.json({message: `Work Center ${name} succesfully created`})
+        res.json({ message: `Work Center ${name} succesfully created` })
       })
+  }
   }, res)
 })
 
 //CREATE RATION
-router.post('/ration', jsonBodyParser, (req, res) => {
+router.post('/ration/:id', [bearerTokenParser, jwtVerifier, jsonBodyParser], (req, res) => {
   routeHandler(() => {
-    const { name, prize, createdBy, workCenterId } = req.body
-    return logic.createRation(name, prize, createdBy, workCenterId).then(() => {
-        res.status(201)
-        res.json({message: `Ration ${name} succesfully created`})
-      })
+    const { params: { id }, sub } = req
+    if (id !== sub) { throw Error('token sub does not match user id') }
+    else {
+      const { name, prize, createdBy, workCenterId } = req.body
+      return logic.createRation(name, prize, createdBy, workCenterId).then(() => {
+          res.status(201)
+          res.json({message: `Ration ${name} succesfully created`})
+        })
+    }
   }, res)
 })
 
