@@ -66,10 +66,21 @@ const logic = {
       { key: 'createdBy', value: createdBy, type: String },
       { key: 'workCenterId', value: workCenterId, type: String },
     ])
-
     return (async () => {
       ration = new Ration({ name, prize, createdBy, workCenterId })
       await ration.save()
+    })()
+  },
+
+  assignWorkCenter (id, workCenterId) {
+    validate([
+      { key: 'id', value: id, type: String },
+      { key: 'workCenterId', value: workCenterId, type: String },
+    ])
+    return (async () => {
+      const user = await User.findById(id)
+      user.workCenter = workCenterId
+      await user.save()
     })()
   }
 }

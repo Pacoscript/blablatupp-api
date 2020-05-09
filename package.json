@@ -4,7 +4,8 @@
   "description": "api for the blablatupp-app",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "debug": "nodemon index.js"
   },
   "repository": {
     "type": "git",

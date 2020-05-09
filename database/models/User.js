@@ -17,25 +17,25 @@ const UserSchema = mongoose.Schema({
   },
   photo: {
     type: String,
-    default: '#'
+    default: '#',
   },
   workCenter: {
-    type: String
+    type: String,
   },
   createdRations: {
-    type: Array
+    type: Array,
   },
   buyedRations: {
-    type: Array
+    type: Array,
   },
   soldRations: {
-    type: Array
-  }
+    type: Array,
+  },
 })
 
-UserSchema.pre('save', function(next) {
+UserSchema.pre('save', function (next) {
   const user = this
-  bcrypt.hash(user.password, 10, function(error, encrypted) {
+  bcrypt.hash(user.password, 10, function (error, encrypted) {
     user.password = encrypted
     next()
   })
