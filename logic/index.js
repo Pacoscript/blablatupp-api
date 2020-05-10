@@ -43,7 +43,7 @@ const logic = {
     })()
   },
 
-  createWorkcenter (name, address, city) {
+  createWorkcenter(name, address, city) {
     validate([
       { key: 'name', value: name, type: String },
       { key: 'address', value: address, type: String },
@@ -59,7 +59,7 @@ const logic = {
     })()
   },
 
-  createRation (name, prize, createdBy, workCenterId) {
+  createRation(name, prize, createdBy, workCenterId) {
     validate([
       { key: 'name', value: name, type: String },
       { key: 'prize', value: prize, type: Number },
@@ -67,34 +67,52 @@ const logic = {
       { key: 'workCenterId', value: workCenterId, type: String },
     ])
     return (async () => {
-      ration = new Ration({ name, prize, createdBy, workCenterId })
+      ration = new Ration({ name, prize, createdBy, workCenterId, creationDate: Date.now() })
       await ration.save()
     })()
   },
 
-  assignWorkCenter (id, workCenterId) {
+  assignWorkCenter(userId, workCenterId) {
     validate([
-      { key: 'id', value: id, type: String },
+      { key: 'userId', value: userId, type: String },
       { key: 'workCenterId', value: workCenterId, type: String },
     ])
     return (async () => {
-      const user = await User.findById(id)
+      const user = await User.findById(userId)
       user.workCenter = workCenterId
       await user.save()
     })()
   },
 
-  assignRation (id, rationId) {
+  assignRation(userId, rationId) {
     validate([
-      { key: 'id', value: id, type: String },
+      { key: 'userId', value: userId, type: String },
       { key: 'rationId', value: rationId, type: String },
     ])
     return (async () => {
-      const user = await User.findById(id)
-      if (!user.buyedRations.includes(rationId)) {
+      const user = await User.findById(userId)
+      const ration = await Ration.findById(rationId)
+      if (ration.sold) throw new AlreadyExistsError('ration assigned')
+      else if (user.buyedRations.includes(rationId))
+        throw new AlreadyExistsError('existing ration, not added')
+      else {
         user.buyedRations.push(rationId)
+        ration.sold = true
+        ration.buyedBy = user.id
         await user.save()
-      } else throw new AlreadyExistsError('existing ration, not added')
+        await ration.save()
+      }
+    })()
+  },
+
+  retrieveRations () {
+    return (async () => {
+      const rations = await Ration.find({ sold: 'false' })
+      const data = rations.map(ration => {
+        const { photo, _id, prize, createdBy, creationDate, name } = ration
+        return {photo, rationId: _id , prize, createdBy, creationDate, name}
+      })
+      return data
     })()
   }
 }

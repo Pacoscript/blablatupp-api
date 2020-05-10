@@ -32,7 +32,8 @@ const RationSchema = mongoose.Schema({
     type: Date
   },
   sold: {
-    type: Boolean
+    type: Boolean,
+    default: false
   }
 })
 

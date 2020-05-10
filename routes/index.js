@@ -30,11 +30,11 @@ router.post('/users', jsonBodyParser, (req, res) => {
 router.post('/auth', jsonBodyParser, (req, res) => {
   routeHandler(() => {
     const { username, password } = req.body
-    return logic.authenticateUser(username, password).then((id) => {
-      const token = jwt.sign({ sub: id }, JWT_SECRET)
+    return logic.authenticateUser(username, password).then((userId) => {
+      const token = jwt.sign({ sub: userId }, JWT_SECRET)
       res.json({
         data: {
-          id,
+          userId,
           token,
         },
       })
@@ -44,16 +44,16 @@ router.post('/auth', jsonBodyParser, (req, res) => {
 
 //CREATE WORKCENTER
 router.post(
-  '/work-center/:id',
+  '/work-center/:userId',
   [bearerTokenParser, jwtVerifier, jsonBodyParser],
   (req, res) => {
     routeHandler(() => {
       const {
-        params: { id },
+        params: { userId },
         sub,
       } = req
-      if (id !== sub) {
-        throw Error('token sub does not match user id')
+      if (userId !== sub) {
+        throw Error('token sub does not match user userId')
       } else {
         const { name, address, city } = req.body
         console.log(name, address, city)
@@ -68,20 +68,20 @@ router.post(
 
 //CREATE RATION
 router.post(
-  '/ration/:id',
+  '/ration/:userId',
   [bearerTokenParser, jwtVerifier, jsonBodyParser],
   (req, res) => {
     routeHandler(() => {
       const {
-        params: { id },
+        params: { userId },
         sub,
       } = req
-      if (id !== sub) {
-        throw Error('token sub does not match user id')
+      if (userId !== sub) {
+        throw Error('token sub does not match user userId')
       } else {
-        const { name, prize, createdBy, workCenterId } = req.body
+        const { name, prize, workCenterId } = req.body
         return logic
-          .createRation(name, prize, createdBy, workCenterId)
+          .createRation(name, prize, userId, workCenterId)
           .then(() => {
             res.status(201)
             res.json({ message: `Ration ${name} succesfully created` })
@@ -93,20 +93,20 @@ router.post(
 
 //ASSIGN WORKCENTER
 router.patch(
-  '/user/assignWorkCenter/:id',
+  '/user/assignWorkCenter/:userId',
   [bearerTokenParser, jwtVerifier, jsonBodyParser],
   (req, res) => {
     routeHandler(() => {
       const {
-        params: { id },
+        params: { userId },
         sub,
       } = req
-      if (id !== sub) {
-        throw Error('token sub does not match user id')
+      if (userId !== sub) {
+        throw Error('token sub does not match user userId')
       } else {
         const { workCenterId } = req.body
         return logic
-          .assignWorkCenter(id, workCenterId)
+          .assignWorkCenter(userId, workCenterId)
           .then(() => {
             res.status(201)
             res.json({ message: `Workcenter succesfully assigned` })
@@ -118,23 +118,49 @@ router.patch(
 
 //ASSIGN RATION
 router.patch(
-  '/user/assignRation/:id',
+  '/user/assignRation/:userId',
   [bearerTokenParser, jwtVerifier, jsonBodyParser],
   (req, res) => {
     routeHandler(() => {
       const {
-        params: { id },
+        params: { userId },
         sub,
       } = req
-      if (id !== sub) {
-        throw Error('token sub does not match user id')
+      if (userId !== sub) {
+        throw Error('token sub does not match user userId')
       } else {
         const { rationId } = req.body
         return logic
-          .assignRation(id, rationId)
+          .assignRation(userId, rationId)
           .then(() => {
             res.status(201)
             res.json({ message: `Ration succesfully assigned` })
+          })
+      }
+    }, res)
+  }
+)
+
+//RETRIEVE AVAILABLE RATIONS
+router.get(
+  '/rations/:userId',
+  [bearerTokenParser, jwtVerifier, jsonBodyParser],
+  (req, res) => {
+    routeHandler(() => {
+      const {
+        params: { userId },
+        sub,
+      } = req
+      if (userId !== sub) {
+        throw Error('token sub does not match user userId')
+      } else {
+        return logic
+          .retrieveRations()
+          .then(rations => {
+            res.status(201)
+            res.json({
+              data: rations
+            })
           })
       }
     }, res)
