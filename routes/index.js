@@ -116,5 +116,30 @@ router.patch(
   }
 )
 
+//ASSIGN RATION
+router.patch(
+  '/user/assignRation/:id',
+  [bearerTokenParser, jwtVerifier, jsonBodyParser],
+  (req, res) => {
+    routeHandler(() => {
+      const {
+        params: { id },
+        sub,
+      } = req
+      if (id !== sub) {
+        throw Error('token sub does not match user id')
+      } else {
+        const { rationId } = req.body
+        return logic
+          .assignRation(id, rationId)
+          .then(() => {
+            res.status(201)
+            res.json({ message: `Ration succesfully assigned` })
+          })
+      }
+    }, res)
+  }
+)
+
 
 module.exports = router

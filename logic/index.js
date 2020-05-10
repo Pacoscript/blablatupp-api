@@ -82,6 +82,20 @@ const logic = {
       user.workCenter = workCenterId
       await user.save()
     })()
+  },
+
+  assignRation (id, rationId) {
+    validate([
+      { key: 'id', value: id, type: String },
+      { key: 'rationId', value: rationId, type: String },
+    ])
+    return (async () => {
+      const user = await User.findById(id)
+      if (!user.buyedRations.includes(rationId)) {
+        user.buyedRations.push(rationId)
+        await user.save()
+      } else throw new AlreadyExistsError('existing ration, not added')
+    })()
   }
 }
 
