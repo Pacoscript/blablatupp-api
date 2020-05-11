@@ -22,7 +22,8 @@ const RationSchema = mongoose.Schema({
   },
   buyedBy: {
     type: ObjectId,
-    ref: 'User'
+    ref: 'User',
+    default: null
   },
   workCenter: {
     type: ObjectId,

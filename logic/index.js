@@ -67,7 +67,13 @@ const logic = {
       { key: 'workCenterId', value: workCenterId, type: String },
     ])
     return (async () => {
-      ration = new Ration({ name, prize, createdBy, workCenterId, creationDate: Date.now() })
+      ration = new Ration({
+        name,
+        prize,
+        createdBy,
+        workCenter: workCenterId,
+        creationDate: Date.now(),
+      })
       await ration.save()
     })()
   },
@@ -105,16 +111,38 @@ const logic = {
     })()
   },
 
-  retrieveRations () {
+  retrieveRations (filters) {
+    const keys = Object.keys(filters)
+    let activeFilters = {}
+    keys.forEach(key => {
+      if (filters[key] !== undefined) activeFilters = {...activeFilters, [key]: filters[key]}
+    })
+
     return (async () => {
-      const rations = await Ration.find({ sold: 'false' })
-      const data = rations.map(ration => {
-        const { photo, _id, prize, createdBy, creationDate, name } = ration
-        return {photo, rationId: _id , prize, createdBy, creationDate, name}
+      const rations = await Ration.find(activeFilters)
+      const data = rations.map((ration) => {
+        const {
+          photo,
+          _id,
+          prize,
+          createdBy,
+          creationDate,
+          name,
+          workCenter,
+        } = ration
+        return {
+          photo,
+          rationId: _id,
+          prize,
+          createdBy,
+          creationDate,
+          name,
+          workCenter,
+        }
       })
       return data
     })()
-  }
+  },
 }
 
 module.exports = logic

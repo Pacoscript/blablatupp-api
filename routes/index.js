@@ -154,8 +154,9 @@ router.get(
       if (userId !== sub) {
         throw Error('token sub does not match user userId')
       } else {
+        const filters = {...req.body}
         return logic
-          .retrieveRations()
+          .retrieveRations(filters)
           .then(rations => {
             res.status(201)
             res.json({
