@@ -43,7 +43,7 @@ const logic = {
     })()
   },
 
-  createWorkcenter(name, address, city) {
+  createWorkcenter (name, address, city) {
     validate([
       { key: 'name', value: name, type: String },
       { key: 'address', value: address, type: String },
@@ -59,22 +59,33 @@ const logic = {
     })()
   },
 
-  createRation(name, prize, createdBy, workCenterId) {
+  createRation(name, prize, createdBy, workCenterId, numberOfRations) {
     validate([
       { key: 'name', value: name, type: String },
       { key: 'prize', value: prize, type: Number },
       { key: 'createdBy', value: createdBy, type: String },
       { key: 'workCenterId', value: workCenterId, type: String },
+      { key: 'numberOfRations', value: numberOfRations, type: Number },
     ])
     return (async () => {
-      ration = new Ration({
-        name,
-        prize,
-        createdBy,
-        workCenter: workCenterId,
-        creationDate: Date.now(),
-      })
-      await ration.save()
+      const user = await User.findById({ _id: createdBy })
+      if (user.workCenter !== workCenterId)
+        throw new NotAllowedError(`user can´t create a ration in other workcenter`)
+      if (numberOfRations > 5)
+        throw new NotAllowedError('yo can´t create more than five rations')
+      for (let i = 0; i < numberOfRations; i++){
+        ration = new Ration({
+          name,
+          prize,
+          createdBy,
+          workCenter: workCenterId,
+          creationDate: Date.now(),
+        })
+        user.createdRations.push(ration._id)
+        await ration.save()
+        await user.save()
+      }
+
     })()
   },
 

@@ -4,6 +4,7 @@ function validate(params) {
   params.forEach(({ key, value, type, optional }) => {
     switch (type) {
       case String:
+        debugger
         if (optional && value === null) break
 
         if (typeof value !== 'string')

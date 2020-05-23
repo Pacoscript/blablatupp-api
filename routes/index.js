@@ -79,9 +79,9 @@ router.post(
       if (userId !== sub) {
         throw Error('token sub does not match user userId')
       } else {
-        const { name, prize, workCenterId } = req.body
+        const { name, prize, workCenterId, numberOfRations } = req.body
         return logic
-          .createRation(name, prize, userId, workCenterId)
+          .createRation(name, prize, userId, workCenterId, numberOfRations)
           .then(() => {
             res.status(201)
             res.json({ message: `Ration ${name} succesfully created` })
