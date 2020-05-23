@@ -12,7 +12,10 @@ const validate = require('../utils/validate')
 const bcrypt = require('bcrypt')
 
 const logic = {
-  registerUser(name, username, password) {
+  registerUser (args) {
+    const name = args.name
+    const username = args.username
+    const password = args.password
     validate([
       { key: 'name', value: name, type: String },
       { key: 'username', value: username, type: String },
@@ -43,7 +46,10 @@ const logic = {
     })()
   },
 
-  createWorkcenter (name, address, city) {
+  createWorkcenter (args) {
+    const name = args.name
+    const address = args.address
+    const city = args.city
     validate([
       { key: 'name', value: name, type: String },
       { key: 'address', value: address, type: String },
@@ -59,7 +65,12 @@ const logic = {
     })()
   },
 
-  createRation(name, prize, createdBy, workCenterId, numberOfRations) {
+  createRation (args) {
+    const name = args.name
+    const prize = args.prize
+    const createdBy = args.userId
+    const workCenterId = args.workCenterId
+    const numberOfRations = args.numberOfRations
     validate([
       { key: 'name', value: name, type: String },
       { key: 'prize', value: prize, type: Number },

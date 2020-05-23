@@ -17,7 +17,7 @@ const {
 router.post('/users', jsonBodyParser, (req, res) => {
   routeHandler(() => {
     const { name, username, password } = req.body
-    return logic.registerUser(name, username, password).then(() => {
+    return logic.registerUser({name, username, password}).then(() => {
       res.status(201)
       res.json({
         message: `${username} successfully registered`,
@@ -57,7 +57,7 @@ router.post(
       } else {
         const { name, address, city } = req.body
         console.log(name, address, city)
-        return logic.createWorkcenter(name, address, city).then(() => {
+        return logic.createWorkcenter({name, address, city}).then(() => {
           res.status(201)
           res.json({ message: `Work Center ${name} succesfully created` })
         })
@@ -81,7 +81,7 @@ router.post(
       } else {
         const { name, prize, workCenterId, numberOfRations } = req.body
         return logic
-          .createRation(name, prize, userId, workCenterId, numberOfRations)
+          .createRation({name, prize, userId, workCenterId, numberOfRations})
           .then(() => {
             res.status(201)
             res.json({ message: `Ration ${name} succesfully created` })
