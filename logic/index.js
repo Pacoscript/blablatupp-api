@@ -12,6 +12,9 @@ const validate = require('../utils/validate')
 const bcrypt = require('bcrypt')
 
 const logic = {
+  sum (a, b) {
+    return a + b;
+  },
   registerUser (args) {
     const name = args.name
     const username = args.username
