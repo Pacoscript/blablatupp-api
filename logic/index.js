@@ -12,9 +12,6 @@ const validate = require('../utils/validate')
 const bcrypt = require('bcrypt')
 
 const logic = {
-  sum (a, b) {
-    return a + b;
-  },
   registerUser (args) {
     const name = args.name
     const username = args.username
@@ -34,7 +31,7 @@ const logic = {
     })()
   },
 
-  authenticateUser(username, password) {
+  authenticateUser (username, password) {
     validate([
       { key: 'username', value: username, type: String },
       { key: 'password', value: password, type: String },
@@ -44,7 +41,6 @@ const logic = {
       const user = await User.findOne({ username })
       if (!user || !bcrypt.compareSync(password, user.password))
         throw new AuthError('invalid username or password')
-
       return user.id
     })()
   },
