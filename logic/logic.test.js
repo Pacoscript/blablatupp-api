@@ -2,6 +2,7 @@ const logic = require('../logic')
 const mongoose = require('mongoose')
 const databaseName = 'test'
 const User = require('../database/models/User')
+const Workcenter = require('../database/models/Workcenter')
 
 const {
   AlreadyExistsError,
@@ -128,6 +129,72 @@ describe('Authenticate an user', () => {
     } catch (error) {
       expect(error).toBeInstanceOf(TypeError)
       expect(error.message).toBe('123 is not a string')
+    }
+  })
+})
+
+describe('CreateWorkCenter', () => {
+  afterEach(async () => {
+    await Workcenter.deleteMany()
+  })
+  it('should create a new workcenter if parameters are correct', async () => {
+    const response = await logic.createWorkcenter({
+      name: 'testWorkcenter',
+      address: 'testAddress',
+      city: 'testCity',
+    })
+    expect(response).toBeUndefined
+    let workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    expect(workcenter).toBeDefined()
+    expect(workcenter.name).toBe('testWorkcenter')
+  })
+  it('should throw an AlreadyExist error if the workCenter name is repeated', async () => {
+    await logic.createWorkcenter({
+      name: 'testWorkcenter',
+      address: 'testAddress',
+      city: 'testCity',
+    })
+    try {
+      await logic.createWorkcenter({
+        name: 'testWorkcenter',
+        address: 'testAddress',
+        city: 'testCity',
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(AlreadyExistsError)
+    }
+  })
+  it('should fail if the name is not a string', async () => {
+    try {
+      await logic.createWorkcenter({
+        name: 0,
+        address: 'testAddress',
+        city: 'testCity',
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+    }
+  })
+  it('should fail if the address is not a string', async () => {
+    try {
+      await logic.createWorkcenter({
+        name: 'testWorkcenter',
+        address: undefined,
+        city: 'testCity',
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+    }
+  })
+  it('should fail if the city is not a string', async () => {
+    try {
+      await logic.createWorkcenter({
+        name: 'testWorkcenter',
+        address: 'testAddress',
+        city: 123,
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
     }
   })
 })
