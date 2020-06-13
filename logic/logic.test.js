@@ -89,6 +89,49 @@ describe('Register a new user', () => {
   })
 })
 
+describe('Authenticate an user', () => {
+  beforeEach(async () => {
+    await logic.registerUser({
+      name: 'testName',
+      username: 'testUsername',
+      password: '123',
+    })
+  })
+  afterEach(async () => {
+    await User.deleteMany()
+  })
+  it('should return userId if username and password are correct', async () => {
+    const response = await logic.authenticateUser('testUsername', '123')
+    let user = await User.findOne({ username: 'testUsername' })
+    console.log(response)
+    expect(response).toBe(user.id)
+  })
+  it('should fail if username or password are incorrect', async () => {
+    try {
+      await logic.authenticateUser('testUsername', '1234')
+    } catch (error) {
+      expect(error).toBeInstanceOf(AuthError)
+      expect(error.message).toBe('invalid username or password')
+    }
+  })
+  it('should fail if username is not a string', async () => {
+    try {
+      await logic.authenticateUser(null, '123')
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+      expect(error.message).toBe('null is not a string')
+    }
+  })
+  it('should fail if password is not a string', async () => {
+    try {
+      await logic.authenticateUser('testUsername', 123)
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+      expect(error.message).toBe('123 is not a string')
+    }
+  })
+})
+
 afterAll(async () => {
   await mongoose.connection.close()
 })
