@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const databaseName = 'test'
 const User = require('../database/models/User')
 const Workcenter = require('../database/models/Workcenter')
+const Ration = require('../database/models/Ration')
 
 const {
   AlreadyExistsError,
@@ -198,6 +199,282 @@ describe('CreateWorkCenter', () => {
     }
   })
 })
+
+describe('createRation', () => {
+  beforeEach(async () => {
+    await logic.registerUser({
+      name: 'testName',
+      username: 'testUsername',
+      password: '123',
+    })
+    await logic.createWorkcenter({
+      name: 'testWorkcenter',
+      address: 'testAddress',
+      city: 'testCity',
+    })
+  })
+  afterEach(async () => {
+    await Ration.deleteMany()
+    await User.deleteMany()
+    await Workcenter.deleteMany()
+  })
+  it('should create a new ration if parameters are correct', async () => {
+    const userId = await logic.authenticateUser('testUsername', '123')
+    let workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    await logic.assignWorkCenter(userId, workcenter.id)
+    const response = await logic.createRation({
+      name: 'test ration name',
+      prize: 3,
+      userId: userId,
+      workCenterId: workcenter.id ,
+      numberOfRations: 3
+    })
+    expect(response).toBeUndefined
+    let ration = await Ration.findOne({ createdBy: userId })
+    expect(ration).toBeDefined()
+    expect(ration.name).toBe('test ration name')
+  })
+  it('should fail if we try to create a ration in other workCenter', async () => {
+    const userId = await logic.authenticateUser('testUsername', '123')
+    let workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    await logic.assignWorkCenter(userId, workcenter.id)
+    try {
+      await logic.createRation({
+        name: 'test ration name',
+        prize: 3,
+        userId: userId,
+        workCenterId: workcenter.id + 1,
+        numberOfRations: 3
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(NotAllowedError)
+      expect(error.message).toBe('user can´t create a ration in other workcenter')
+    }
+  })
+  it('should fail if we try to create more than five rations', async () => {
+    const userId = await logic.authenticateUser('testUsername', '123')
+    let workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    await logic.assignWorkCenter(userId, workcenter.id)
+    try {
+      await logic.createRation({
+        name: 'test ration name',
+        prize: 3,
+        userId: userId,
+        workCenterId: workcenter.id,
+        numberOfRations: 6
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(NotAllowedError)
+      expect(error.message).toBe('you can´t create more than five rations')
+    }
+  })
+  it('should fail if name is not a string', async () => {
+    const userId = await logic.authenticateUser('testUsername', '123')
+    let workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    await logic.assignWorkCenter(userId, workcenter.id)
+    try {
+      await logic.createRation({
+        name: {},
+        prize: 3,
+        userId: userId,
+        workCenterId: workcenter.id,
+        numberOfRations: 5
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+    }
+  })
+  it('should fail if prize is not a number', async () => {
+    const userId = await logic.authenticateUser('testUsername', '123')
+    let workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    await logic.assignWorkCenter(userId, workcenter.id)
+    try {
+      await logic.createRation({
+        name: 'test ration name',
+        prize: '3',
+        userId: userId,
+        workCenterId: workcenter.id,
+        numberOfRations: 5
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+    }
+  })
+  it('should fail if userId is not a string', async () => {
+    const userId = await logic.authenticateUser('testUsername', '123')
+    let workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    await logic.assignWorkCenter(userId, workcenter.id)
+    try {
+      await logic.createRation({
+        name: 'test ration name',
+        prize: 3,
+        userId:Number(userId),
+        workCenterId: workcenter.id,
+        numberOfRations: 5
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+    }
+  })
+  it('should fail if workcenter is not a string', async () => {
+    const userId = await logic.authenticateUser('testUsername', '123')
+    let workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    await logic.assignWorkCenter(userId, workcenter.id)
+    try {
+      await logic.createRation({
+        name: 'test ration name',
+        prize: 3,
+        userId: userId,
+        workCenterId: Number(workcenter.id),
+        numberOfRations: 5
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+    }
+  })
+  it('should fail if numberOfRations is not a string', async () => {
+    const userId = await logic.authenticateUser('testUsername', '123')
+    let workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    await logic.assignWorkCenter(userId, workcenter.id)
+    try {
+      await logic.createRation({
+        name: 'test ration name',
+        prize: 3,
+        userId: userId,
+        workCenterId: workcenter.id,
+        numberOfRations: null
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+    }
+  })
+})
+describe('assign work center', () => {
+  beforeEach(async () => {
+    await logic.registerUser({
+      name: 'testName',
+      username: 'testUsername',
+      password: '123',
+    })
+    await logic.createWorkcenter({
+      name: 'testWorkcenter',
+      address: 'testAddress',
+      city: 'testCity',
+    })
+  })
+  afterEach(async () => {
+    await User.deleteMany()
+    await Workcenter.deleteMany()
+  })
+  it('should assign a workCenter to an user if data is correct', async () => {
+    const user = await User.findOne({ name: 'testName' })
+    const workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    await logic.assignWorkCenter(user.id, workcenter.id)
+    const userAfterAssignation = await User.findOne({ name: 'testName' })
+    const expectedWorkCenter = workcenter.id
+    expect(userAfterAssignation.workCenter).toBe(expectedWorkCenter)
+  })
+  it('should fail if userid is not a string', async () => {
+    try {
+      await logic.assignWorkCenter(123, 'string')
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+    }
+  })
+  it('should fail if workcenterId is not a string', async () => {
+    try {
+      await logic.assignWorkCenter('string', undefined)
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+    }
+  })
+})
+describe('assign ration', () => {
+  beforeEach(async () => {
+    await logic.registerUser({
+      name: 'testName',
+      username: 'testUsername',
+      password: '123',
+    })
+    await logic.registerUser({
+      name: 'testName2',
+      username: 'testUsername2',
+      password: '123',
+    })
+    await logic.createWorkcenter({
+      name: 'testWorkcenter',
+      address: 'testAddress',
+      city: 'testCity',
+    })
+    const userId = await logic.authenticateUser('testUsername', '123')
+    const user2Id = await logic.authenticateUser('testUsername2', '123')
+    let workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    await logic.assignWorkCenter(userId, workcenter.id)
+    await logic.assignWorkCenter(user2Id, workcenter.id)
+    const response = await logic.createRation({
+      name: 'test ration name',
+      prize: 3,
+      userId: userId,
+      workCenterId: workcenter.id ,
+      numberOfRations: 3
+    })
+  })
+  afterEach(async () => {
+    await User.deleteMany()
+    await Workcenter.deleteMany()
+    await Ration.deleteMany()
+  })
+  it('should assign a ration to an user if data is correct', async () => {
+    const user2 = await User.findOne({name: 'testName2'})
+    const ration = await Ration.findOne({ name: 'test ration name' })
+    await logic.assignRation(user2.id, ration.id)
+    const user2AfterRationAssigned = await User.findOne({ name: 'testName2' })
+    const expectedRations = [ration.id]
+    expect(user2AfterRationAssigned.buyedRations[0]).toBe(expectedRations[0])
+  })
+  it('should fail if userId is not a string', async () => {
+    try {
+      await logic.assignRation(undefined, 'string')
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+    }
+  })
+  it('should fail if rationId is not a string', async () => {
+    try {
+      await logic.assignRation('string', 123)
+    } catch (error) {
+      expect(error).toBeInstanceOf(TypeError)
+    }
+  })
+  it('should throw an error if ration is sold', async () => {
+    const user2 = await User.findOne({name: 'testName2'})
+    const ration = await Ration.findOne({ name: 'test ration name' })
+    await logic.assignRation(user2.id, ration.id)
+    try {
+      await logic.assignRation(user2.id, ration.id)
+    } catch (error) {
+      expect(error).toBeInstanceOf(AlreadyExistsError)
+    }
+  })
+  it('the ration must be have sold parameter setted to true', async () => {
+    const user2 = await User.findOne({name: 'testName2'})
+    const ration = await Ration.findOne({ name: 'test ration name' })
+    await logic.assignRation(user2.id, ration.id)
+    const rationAfterAssignation = await Ration.findOne({ name: 'test ration name' })
+    const expectedRationSold = true
+    expect(rationAfterAssignation.sold).toBe(expectedRationSold)
+  })
+  it('the ration must save the id of the buyer', async () => {
+    const user2 = await User.findOne({name: 'testName2'})
+    const ration = await Ration.findOne({ name: 'test ration name' })
+    await logic.assignRation(user2.id, ration.id)
+    const rationAfterAssignation = await Ration.findOne({ name: 'test ration name' })
+    const expectedBuyedBy = user2.id
+    expect((rationAfterAssignation.buyedBy).toString()).toBe(expectedBuyedBy)
+  })
+})
+
+
 
 afterAll(async () => {
   await mongoose.connection.close()

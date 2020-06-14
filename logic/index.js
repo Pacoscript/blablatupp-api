@@ -82,7 +82,7 @@ const logic = {
       if (user.workCenter !== workCenterId)
         throw new NotAllowedError(`user can´t create a ration in other workcenter`)
       if (numberOfRations > 5)
-        throw new NotAllowedError('yo can´t create more than five rations')
+        throw new NotAllowedError('you can´t create more than five rations')
       for (let i = 0; i < numberOfRations; i++){
         ration = new Ration({
           name,
@@ -120,8 +120,6 @@ const logic = {
       const user = await User.findById(userId)
       const ration = await Ration.findById(rationId)
       if (ration.sold) throw new AlreadyExistsError('ration assigned')
-      else if (user.buyedRations.includes(rationId))
-        throw new AlreadyExistsError('existing ration, not added')
       else {
         user.buyedRations.push(rationId)
         ration.sold = true
