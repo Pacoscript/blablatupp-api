@@ -474,6 +474,61 @@ describe('assign ration', () => {
   })
 })
 
+describe('retrieve rations', () => {
+  beforeEach(async () => {
+    await logic.registerUser({
+      name: 'testName',
+      username: 'testUsername',
+      password: '123',
+    })
+    await logic.registerUser({
+      name: 'testName2',
+      username: 'testUsername2',
+      password: '123',
+    })
+    await logic.createWorkcenter({
+      name: 'testWorkcenter',
+      address: 'testAddress',
+      city: 'testCity',
+    })
+    const userId = await logic.authenticateUser('testUsername', '123')
+    const user2Id = await logic.authenticateUser('testUsername2', '123')
+    let workcenter = await Workcenter.findOne({ name: 'testWorkcenter' })
+    await logic.assignWorkCenter(userId, workcenter.id)
+    await logic.assignWorkCenter(user2Id, workcenter.id)
+    const response = await logic.createRation({
+      name: 'test ration name',
+      prize: 3,
+      userId: userId,
+      workCenterId: workcenter.id ,
+      numberOfRations: 1
+    })
+    const user2 = await User.findOne({name: 'testName2'})
+    const ration = await Ration.findOne({ name: 'test ration name' })
+    await logic.assignRation(user2.id, ration.id)
+
+  })
+  afterEach(async () => {
+    await User.deleteMany()
+    await Workcenter.deleteMany()
+    await Ration.deleteMany()
+  })
+  it('should retrieve a the ration by createdBy id', async () => {
+    const user1 = await User.findOne({name: 'testName'})
+    const user2 = await User.findOne({name: 'testName2'})
+    const ration = await logic.retrieveRations({createdBy: user1.id })
+    const expectedRation = await Ration.findOne({name: 'test ration name'})
+    expect(ration[0].name).toBe(expectedRation.name)
+  })
+  it('should retrieve a the ration by workCenter id', async () => {
+    const user1 = await User.findOne({name: 'testName'})
+    const user2 = await User.findOne({name: 'testName2'})
+    const ration = await logic.retrieveRations({workCenter: user1.workCenter })
+    const expectedRation = await Ration.findOne({name: 'test ration name'})
+    expect(ration[0].name).toBe(expectedRation.name)
+  })
+})
+
 
 
 afterAll(async () => {
