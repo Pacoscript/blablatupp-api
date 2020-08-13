@@ -142,7 +142,7 @@ router.patch(
 )
 
 //RETRIEVE AVAILABLE RATIONS
-router.get(
+router.post(
   '/rations/:userId',
   [bearerTokenParser, jwtVerifier, jsonBodyParser],
   (req, res) => {
