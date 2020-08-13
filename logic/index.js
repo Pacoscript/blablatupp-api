@@ -38,7 +38,7 @@ const logic = {
     ])
     return (async () => {
       const user = await User.findOne({ username })
-      if (!user || !bcrypt.compare(password, user.password))
+      if (!user || !bcrypt.compareSync(password, user.password))
         throw new AuthError('invalid username or password')
       return user.id
     })()

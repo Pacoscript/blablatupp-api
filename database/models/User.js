@@ -35,10 +35,8 @@ const UserSchema = mongoose.Schema({
 
 UserSchema.pre('save', function (next) {
   const user = this
-  bcrypt.hash(user.password, 10, function (error, encrypted) {
-    user.password = encrypted
-    next()
-  })
+  const hash = bcrypt.hashSync(user.password, 10)
+  user.password = hash
 })
 
 module.exports = mongoose.model('User', UserSchema)
