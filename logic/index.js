@@ -43,6 +43,20 @@ const logic = {
       return user.id
     })()
   },
+  
+  getUserInfo (userId) {
+    return (async () => {
+      const user = await User.findOne({ _id: userId })
+      const workCenter = await Workcenter.findOne({ _id: user.workCenter })
+      return {
+        name: user.name,
+        workCenter: workCenter,
+        createdRations: user.createdRations.length,
+        buyedRations: user.buyedRations.length,
+        soldRations: user.soldRations.length        
+      }
+    })()
+  },
 
   createWorkcenter (args) {
     const name = args.name

@@ -42,6 +42,28 @@ router.post('/auth', jsonBodyParser, (req, res) => {
   }, res)
 })
 
+//RETRIEVE USER INFO
+router.get(
+  '/user/:userId',
+  [bearerTokenParser, jwtVerifier, jsonBodyParser],
+  (req, res) => {
+    routeHandler(() => {
+      const {
+        params: { userId },
+        sub,
+      } = req
+      if (userId !== sub) {
+        throw Error('token sub does not match user userId')
+      } else {
+        console.log(userId)
+        return logic.getUserInfo(userId).then(user => {
+          res.json({ data: user })
+        })
+      }
+    }, res)
+  }
+)
+
 //CREATE WORKCENTER
 router.post(
   '/work-center/:userId',
