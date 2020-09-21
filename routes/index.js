@@ -180,9 +180,62 @@ router.post(
         return logic
           .retrieveRations(filters)
           .then(rations => {
-            res.status(201)
+            res.status(200)
             res.json({
               data: rations
+            })
+          })
+      }
+    }, res)
+  }
+)
+
+//RETRIEVE WORKPLACES
+router.get(
+  '/workplaces/:userId',
+  [bearerTokenParser, jwtVerifier, jsonBodyParser],
+  (req, res) => {
+    routeHandler(() => {
+      const {
+        params: { userId },
+        sub,
+      } = req
+      if (userId !== sub) {
+        throw Error('token sub does not match user userId')
+      } else {
+        return logic
+          .retrieveWorkplaces()
+          .then(workplaces => {
+            res.status(200)
+            res.json({
+              data: workplaces
+            })
+          })
+      }
+    }, res)
+  }
+)
+
+//RETRIEVE WORKPLACES
+router.post(
+  '/retrieveWorkplace/:userId',
+  [bearerTokenParser, jwtVerifier, jsonBodyParser],
+  (req, res) => {
+    routeHandler(() => {
+      const {
+        params: { userId },
+        sub,
+      } = req
+      if (userId !== sub) {
+        throw Error('token sub does not match user userId')
+      } else {
+        const { workCenterId } = req.body
+        return logic
+          .retrieveWorkplace(workCenterId)
+          .then(workplace => {
+            res.status(200)
+            res.json({
+              data: workplace
             })
           })
       }

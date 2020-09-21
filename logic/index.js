@@ -112,6 +112,24 @@ const logic = {
     })()
   },
 
+  retrieveWorkplaces() {
+    return (async () => {
+      const data = await Workcenter.find()
+      return data
+    })()
+  },
+
+  retrieveWorkplace(workCenterId) {
+    debugger
+    validate([
+      { key: 'workCenterId', value: workCenterId, type: String },
+    ])
+    return(async () => {
+      const data = await Workcenter.findById(workCenterId)
+      return data
+    })()
+  },
+
   assignWorkCenter(userId, workCenterId) {
     validate([
       { key: 'userId', value: userId, type: String },
